@@ -6,6 +6,9 @@ import { Dashboard } from '@/components/Dashboard';
 import { Inventory } from '@/components/Inventory';
 import { Analytics } from '@/components/Analytics';
 import { CycleManager } from '@/components/CycleManager';
+import { UserManagement } from '@/components/UserManagement';
+import { StockAlerts } from '@/components/StockAlerts';
+import { SalesAnalytics } from '@/components/SalesAnalytics';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -18,6 +21,12 @@ const Index = () => {
         return <Inventory />;
       case 'analytics':
         return <Analytics />;
+      case 'sales-analytics':
+        return <SalesAnalytics />;
+      case 'stock-alerts':
+        return <StockAlerts />;
+      case 'user-management':
+        return <UserManagement />;
       case 'cycles':
         return <CycleManager />;
       default:

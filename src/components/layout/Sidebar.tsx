@@ -5,7 +5,10 @@ import {
   Package, 
   BarChart3, 
   RefreshCw,
-  Building2
+  Building2,
+  Users,
+  AlertTriangle,
+  TrendingUp
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -18,7 +21,10 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
   const menuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'inventory', label: 'Inventory', icon: Package },
+    { id: 'stock-alerts', label: 'Stock Alerts', icon: AlertTriangle },
+    { id: 'sales-analytics', label: 'Sales Analytics', icon: TrendingUp },
     { id: 'analytics', label: 'Analytics', icon: BarChart3 },
+    { id: 'user-management', label: 'User Management', icon: Users },
     { id: 'cycles', label: 'Cycle Manager', icon: RefreshCw },
   ];
 
@@ -29,7 +35,7 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
           <Building2 className="h-8 w-8 text-blue-600" />
           <div>
             <h1 className="text-xl font-bold text-gray-900">CycleFlow</h1>
-            <p className="text-sm text-gray-500">Inventory Manager</p>
+            <p className="text-sm text-gray-500">POS & Inventory</p>
           </div>
         </div>
       </div>
@@ -54,6 +60,14 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
           );
         })}
       </nav>
+
+      {/* Tier Badge */}
+      <div className="absolute bottom-4 left-4 right-4">
+        <div className="bg-gradient-to-r from-purple-500 to-blue-600 text-white p-3 rounded-lg text-center">
+          <p className="text-sm font-medium">Enterprise Plus</p>
+          <p className="text-xs opacity-90">All features unlocked</p>
+        </div>
+      </div>
     </div>
   );
 };
