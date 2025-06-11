@@ -44,10 +44,10 @@ export const useTierLimits = () => {
       }
 
       try {
-        // Get user's organization and tier information
+        // Get user's organization and tier information - include id in select
         const { data: orgData, error: orgError } = await supabase
           .from('organizations')
-          .select('tier, max_shops, max_employees')
+          .select('id, tier, max_shops, max_employees')
           .eq('owner_id', user.id)
           .single();
 
@@ -65,7 +65,7 @@ export const useTierLimits = () => {
         const { data: employeeData, error: employeeError } = await supabase
           .from('user_organizations')
           .select('id')
-          .eq('organization_id', orgData?.id || '');
+          .eq('organization_id', orgData.id);
 
         if (!employeeError && employeeData) {
           setCurrentEmployeeCount(employeeData.length);
