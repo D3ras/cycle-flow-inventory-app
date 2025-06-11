@@ -4,9 +4,18 @@ import { Bell, Search, User, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTheme } from '@/contexts/ThemeContext';
+import { toast } from '@/components/ui/sonner';
 
 export const Header = () => {
   const { theme, toggleTheme } = useTheme();
+
+  const handleNotificationClick = () => {
+    toast.info('You have no new notifications');
+  };
+
+  const handleProfileClick = () => {
+    toast.info('Profile settings coming soon!');
+  };
 
   return (
     <header className="bg-background shadow-sm border-b border-border px-6 py-4">
@@ -29,10 +38,10 @@ export const Header = () => {
               <Sun className="h-5 w-5" />
             )}
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleNotificationClick}>
             <Bell className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={handleProfileClick}>
             <User className="h-5 w-5" />
           </Button>
         </div>

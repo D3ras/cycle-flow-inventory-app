@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTierLimits } from '@/hooks/useTierLimits';
+import { toast } from '@/components/ui/sonner';
 
 interface SidebarProps {
   activeTab: string;
@@ -32,6 +33,11 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
     { id: 'cycles', label: 'Cycle Manager', icon: RefreshCw },
     { id: 'billing', label: 'Billing & Plans', icon: CreditCard },
   ];
+
+  const handleTabChange = (tabId: string) => {
+    onTabChange(tabId);
+    toast.success(`Switched to ${menuItems.find(item => item.id === tabId)?.label}`);
+  };
 
   const getTierDisplayName = () => {
     switch (currentTier) {
@@ -69,12 +75,12 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
           return (
             <button
               key={item.id}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => handleTabChange(item.id)}
               className={cn(
-                "w-full flex items-center space-x-3 px-6 py-3 text-left transition-colors",
+                "w-full flex items-center space-x-3 px-6 py-3 text-left transition-colors hover:bg-accent hover:text-accent-foreground",
                 activeTab === item.id
                   ? "bg-accent text-accent-foreground border-r-2 border-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                  : "text-muted-foreground"
               )}
             >
               <Icon className="h-5 w-5" />
@@ -86,7 +92,8 @@ export const Sidebar = ({ activeTab, onTabChange }: SidebarProps) => {
 
       {/* Tier Badge */}
       <div className="absolute bottom-4 left-4 right-4">
-        <div className={cn("bg-gradient-to-r text-white p-3 rounded-lg text-center", getTierGradient())}>
+        <div className={cn("bg-gradient-to-r text-white p-3 rounded-lg text-center cursor-pointer", getTierGradient())}
+             onClick={() => handleTabChange('billing')}>
           <p className="text-sm font-medium">{getTierDisplayName()}</p>
           <p className="text-xs opacity-90">
             {currentTier === 'enterprise-plus' 

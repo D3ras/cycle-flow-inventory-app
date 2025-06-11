@@ -3,12 +3,14 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { LogOut, User, Settings } from 'lucide-react';
+import { LogOut, User, Settings, Bell, Sun, Moon } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { toast } from '@/components/ui/sonner';
 
 export const AuthenticatedHeader = () => {
   const { user, signOut } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const handleSignOut = async () => {
     try {
@@ -17,6 +19,10 @@ export const AuthenticatedHeader = () => {
     } catch (error) {
       toast.error('Failed to sign out');
     }
+  };
+
+  const handleNotificationClick = () => {
+    toast.info('You have no new notifications');
   };
 
   const getInitials = (name: string) => {
@@ -30,14 +36,29 @@ export const AuthenticatedHeader = () => {
   const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'User';
 
   return (
-    <header className="bg-white border-b border-gray-200 px-6 py-4">
+    <header className="bg-background border-b border-border px-6 py-4">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-lg font-semibold text-gray-900">Inventory Management</h1>
-          <p className="text-sm text-gray-500">Manage your business inventory efficiently</p>
+          <h1 className="text-lg font-semibold text-foreground">Inventory Management</h1>
+          <p className="text-sm text-muted-foreground">Manage your business inventory efficiently</p>
         </div>
         
         <div className="flex items-center space-x-4">
+          {/* Theme Toggle Button */}
+          <Button variant="ghost" size="sm" onClick={toggleTheme}>
+            {theme === 'light' ? (
+              <Moon className="h-5 w-5" />
+            ) : (
+              <Sun className="h-5 w-5" />
+            )}
+          </Button>
+          
+          {/* Notifications Button */}
+          <Button variant="ghost" size="sm" onClick={handleNotificationClick}>
+            <Bell className="h-5 w-5" />
+          </Button>
+          
+          {/* User Profile Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -54,11 +75,11 @@ export const AuthenticatedHeader = () => {
                   <p className="text-xs text-muted-foreground">{user?.email}</p>
                 </div>
               </div>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.info('Profile settings coming soon!')}>
                 <User className="mr-2 h-4 w-4" />
                 Profile
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={() => toast.info('Settings coming soon!')}>
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </DropdownMenuItem>
