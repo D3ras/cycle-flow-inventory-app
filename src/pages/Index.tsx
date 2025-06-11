@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
-import { Header } from '@/components/layout/Header';
+import { AuthenticatedHeader } from '@/components/layout/AuthenticatedHeader';
 import { Dashboard } from '@/components/Dashboard';
 import { Inventory } from '@/components/Inventory';
 import { Analytics } from '@/components/Analytics';
@@ -41,7 +41,7 @@ const Index = () => {
     <div className="min-h-screen bg-background flex">
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
       <div className="flex-1 flex flex-col">
-        <Header />
+        <AuthenticatedHeader />
         <main className="flex-1 p-6">
           {renderContent()}
         </main>

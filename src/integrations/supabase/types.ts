@@ -9,16 +9,148 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      organizations: {
+        Row: {
+          created_at: string
+          id: string
+          max_employees: number
+          max_shops: number
+          name: string
+          owner_id: string
+          tier: Database["public"]["Enums"]["tier_type"]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          max_employees?: number
+          max_shops?: number
+          name: string
+          owner_id: string
+          tier?: Database["public"]["Enums"]["tier_type"]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          max_employees?: number
+          max_shops?: number
+          name?: string
+          owner_id?: string
+          tier?: Database["public"]["Enums"]["tier_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizations_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          role: Database["public"]["Enums"]["user_role"]
+          tier: Database["public"]["Enums"]["tier_type"]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          tier?: Database["public"]["Enums"]["tier_type"]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          tier?: Database["public"]["Enums"]["tier_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_organizations: {
+        Row: {
+          created_at: string
+          id: string
+          manager_id: string | null
+          organization_id: string
+          role: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          manager_id?: string | null
+          organization_id: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          manager_id?: string | null
+          organization_id?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_organizations_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_organizations_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_organizations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_tier_limits: {
+        Args: { user_uuid: string }
+        Returns: {
+          tier: Database["public"]["Enums"]["tier_type"]
+          max_shops: number
+          max_employees: number
+          current_shops: number
+          current_employees: number
+        }[]
+      }
     }
     Enums: {
-      [_ in never]: never
+      tier_type: "free" | "premium" | "enterprise-plus"
+      user_role: "business-owner" | "manager" | "employee"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -133,6 +265,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      tier_type: ["free", "premium", "enterprise-plus"],
+      user_role: ["business-owner", "manager", "employee"],
+    },
   },
 } as const
