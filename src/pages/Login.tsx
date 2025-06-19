@@ -11,25 +11,32 @@ import { toast } from '@/components/ui/sonner';
 import { supabase } from '@/integrations/supabase/client';
 
 const Login = () => {
-  const { user, loading, signInWithGoogle } = useAuth();
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
+  // Redirect authenticated users to the main app
   useEffect(() => {
     if (user && !loading) {
-      navigate('/');
+      console.log('User authenticated, redirecting to main app');
+      navigate('/', { replace: true });
     }
   }, [user, loading, navigate]);
 
   const handleGoogleLogin = async () => {
     try {
+      setIsLoading(true);
+      console.log('Attempting Google login...');
       await signInWithGoogle();
-      toast.success('Successfully signed in with Google!');
+      // Note: redirect will happen automatically via useEffect when user state changes
     } catch (error) {
+      console.error('Google login error:', error);
       toast.error('Failed to sign in with Google. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -39,6 +46,7 @@ const Login = () => {
 
     try {
       if (isSignUp) {
+        console.log('Attempting email signup...');
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -57,27 +65,34 @@ const Login = () => {
           toast.success('Check your email for the confirmation link!');
         }
       } else {
+        console.log('Attempting email login...');
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password
         });
 
         if (error) {
+          console.error('Email login error:', error);
           if (error.message.includes('Invalid login credentials')) {
             toast.error('Invalid email or password. Please try again.');
           } else {
             toast.error(error.message);
           }
         } else {
+          console.log('Email login successful');
           toast.success('Successfully signed in!');
+          // Note: redirect will happen automatically via useEffect when user state changes
         }
       }
     } catch (error) {
+      console.error('Authentication error:', error);
       toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const { signInWithGoogle } = useAuth();
 
   if (loading) {
     return (
@@ -85,6 +100,18 @@ const Login = () => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render login form if user is already authenticated
+  if (user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Redirecting...</p>
         </div>
       </div>
     );
@@ -111,6 +138,7 @@ const Login = () => {
                 onClick={handleGoogleLogin}
                 className="w-full flex items-center justify-center space-x-2"
                 size="lg"
+                disabled={isLoading}
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -130,7 +158,7 @@ const Login = () => {
                     d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                   />
                 </svg>
-                <span>Continue with Google</span>
+                <span>{isLoading ? 'Signing in...' : 'Continue with Google'}</span>
               </Button>
             </TabsContent>
             
