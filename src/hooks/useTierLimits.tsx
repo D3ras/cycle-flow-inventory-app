@@ -1,7 +1,5 @@
 
 import { useState, useMemo, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
 
 export type Tier = 'free' | 'premium' | 'enterprise-plus';
 
@@ -30,59 +28,16 @@ const TIER_LIMITS: Record<Tier, TierLimits> = {
 };
 
 export const useTierLimits = () => {
-  const { user } = useAuth();
-  const [currentTier, setCurrentTier] = useState<Tier>('free');
-  const [currentShopCount, setCurrentShopCount] = useState(0);
-  const [currentEmployeeCount, setCurrentEmployeeCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  // Set default tier to 'enterprise-plus' since authentication is removed
+  const [currentTier, setCurrentTier] = useState<Tier>('enterprise-plus');
+  const [currentShopCount, setCurrentShopCount] = useState(1);
+  const [currentEmployeeCount, setCurrentEmployeeCount] = useState(1);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const fetchUserTierData = async () => {
-      if (!user) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        // Get user's organization and tier information - include id in select
-        const { data: orgData, error: orgError } = await supabase
-          .from('organizations')
-          .select('id, tier, max_shops, max_employees')
-          .eq('owner_id', user.id)
-          .single();
-
-        if (orgError) {
-          console.error('Error fetching organization data:', orgError);
-          setLoading(false);
-          return;
-        }
-
-        if (orgData) {
-          setCurrentTier(orgData.tier as Tier);
-        }
-
-        // Get current employee count
-        const { data: employeeData, error: employeeError } = await supabase
-          .from('user_organizations')
-          .select('id')
-          .eq('organization_id', orgData.id);
-
-        if (!employeeError && employeeData) {
-          setCurrentEmployeeCount(employeeData.length);
-        }
-
-        // For now, we'll set shops to 1 as we don't have a shops table yet
-        setCurrentShopCount(1);
-
-      } catch (error) {
-        console.error('Error fetching tier data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUserTierData();
-  }, [user]);
+    // Since we removed authentication, we'll just use default values
+    setLoading(false);
+  }, []);
 
   const limits = useMemo(() => TIER_LIMITS[currentTier], [currentTier]);
 
@@ -113,20 +68,8 @@ export const useTierLimits = () => {
   };
 
   const updateTier = async (newTier: Tier) => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase
-        .from('organizations')
-        .update({ tier: newTier })
-        .eq('owner_id', user.id);
-
-      if (!error) {
-        setCurrentTier(newTier);
-      }
-    } catch (error) {
-      console.error('Error updating tier:', error);
-    }
+    // Since we removed authentication, just update local state
+    setCurrentTier(newTier);
   };
 
   return {
