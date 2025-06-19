@@ -2,11 +2,8 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart3, Package, Users, TrendingUp, AlertTriangle, DollarSign } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
 
 export const Dashboard = () => {
-  const { user } = useAuth();
-
   const stats = [
     {
       title: 'Total Items',
@@ -43,7 +40,7 @@ export const Dashboard = () => {
       <div>
         <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
         <p className="text-muted-foreground mt-2">
-          Welcome back, {user?.user_metadata?.full_name || user?.email || 'User'}
+          Welcome back! Here's your business overview.
         </p>
       </div>
 
