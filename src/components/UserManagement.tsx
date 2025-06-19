@@ -4,152 +4,222 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, UserPlus, Crown, Shield, User } from 'lucide-react';
-import { AddUserDialog } from '@/components/AddUserDialog';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Plus, Search, Filter, Edit, Trash2, Users, UserCheck, UserX } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 
 interface User {
   id: string;
   name: string;
   email: string;
-  role: 'business-owner' | 'manager' | 'employee';
-  tier: 'free' | 'premium' | 'enterprise-plus';
-  managerId?: string;
-  createdBy: string;
-  isActive: boolean;
-  createdAt: string;
+  role: 'admin' | 'manager' | 'employee';
+  status: 'active' | 'inactive' | 'pending';
+  lastLogin: string;
+  joinDate: string;
+  avatar?: string;
 }
 
 export const UserManagement = () => {
+  const [searchTerm, setSearchTerm] = useState('');
   const [users, setUsers] = useState<User[]>([
     {
       id: '1',
-      name: 'John Smith',
-      email: 'john@business.com',
-      role: 'business-owner',
-      tier: 'enterprise-plus',
-      createdBy: 'system',
-      isActive: true,
-      createdAt: '2024-01-15'
+      name: 'John Doe',
+      email: 'john.doe@company.com',
+      role: 'admin',
+      status: 'active',
+      lastLogin: '2024-06-19 10:30',
+      joinDate: '2024-01-15',
+      avatar: ''
     },
     {
       id: '2',
-      name: 'Sarah Johnson',
-      email: 'sarah@business.com',
+      name: 'Jane Smith',
+      email: 'jane.smith@company.com',
       role: 'manager',
-      tier: 'enterprise-plus',
-      managerId: '1',
-      createdBy: '1',
-      isActive: true,
-      createdAt: '2024-02-20'
+      status: 'active',
+      lastLogin: '2024-06-19 09:15',
+      joinDate: '2024-02-20',
+      avatar: ''
     },
     {
       id: '3',
-      name: 'Mike Wilson',
-      email: 'mike@business.com',
+      name: 'Mike Johnson',
+      email: 'mike.johnson@company.com',
       role: 'employee',
-      tier: 'enterprise-plus',
-      managerId: '2',
-      createdBy: '2',
-      isActive: true,
-      createdAt: '2024-03-10'
+      status: 'active',
+      lastLogin: '2024-06-18 16:45',
+      joinDate: '2024-03-10',
+      avatar: ''
+    },
+    {
+      id: '4',
+      name: 'Sarah Wilson',
+      email: 'sarah.wilson@company.com',
+      role: 'employee',
+      status: 'inactive',
+      lastLogin: '2024-06-10 14:20',
+      joinDate: '2024-04-05',
+      avatar: ''
+    },
+    {
+      id: '5',
+      name: 'David Brown',
+      email: 'david.brown@company.com',
+      role: 'employee',
+      status: 'pending',
+      lastLogin: 'Never',
+      joinDate: '2024-06-18',
+      avatar: ''
     }
   ]);
 
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [currentUser] = useState('1'); // Simulated current user
-
-  const getRoleIcon = (role: string) => {
-    switch (role) {
-      case 'business-owner': return Crown;
-      case 'manager': return Shield;
-      case 'employee': return User;
-      default: return User;
-    }
-  };
+  const filteredUsers = users.filter(user =>
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'business-owner': return 'bg-purple-100 text-purple-800';
+      case 'admin': return 'bg-red-100 text-red-800';
       case 'manager': return 'bg-blue-100 text-blue-800';
       case 'employee': return 'bg-green-100 text-green-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getTierColor = (tier: string) => {
-    switch (tier) {
-      case 'enterprise-plus': return 'bg-gold-100 text-gold-800';
-      case 'premium': return 'bg-orange-100 text-orange-800';
-      case 'free': return 'bg-gray-100 text-gray-800';
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-100 text-green-800';
+      case 'inactive': return 'bg-gray-100 text-gray-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getCurrentUserRole = () => {
-    const user = users.find(u => u.id === currentUser);
-    return user?.role || 'employee';
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .toUpperCase();
   };
 
-  const canManageUser = (targetUser: User) => {
-    const currentUserRole = getCurrentUserRole();
-    
-    if (currentUserRole === 'business-owner') return true;
-    if (currentUserRole === 'manager' && targetUser.role === 'employee') return true;
-    
-    return false;
+  const handleUserAction = (userId: string, action: 'activate' | 'deactivate' | 'delete') => {
+    if (action === 'delete') {
+      setUsers(users.filter(user => user.id !== userId));
+      toast.success('User deleted successfully');
+    } else {
+      setUsers(users.map(user => 
+        user.id === userId 
+          ? { ...user, status: action === 'activate' ? 'active' : 'inactive' as const }
+          : user
+      ));
+      toast.success(`User ${action}d successfully`);
+    }
   };
 
-  const handleAddUser = (newUser: Omit<User, 'id' | 'createdAt'>) => {
-    const user: User = {
-      ...newUser,
-      id: (users.length + 1).toString(),
-      createdAt: new Date().toISOString().split('T')[0]
-    };
-    setUsers([...users, user]);
-  };
+  const activeUsers = users.filter(u => u.status === 'active').length;
+  const pendingUsers = users.filter(u => u.status === 'pending').length;
+  const totalUsers = users.length;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-600 mt-2">Manage users, roles, and permissions</p>
+          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-2">
+            Manage user accounts, roles, and permissions
+          </p>
         </div>
-        <Button onClick={() => setShowAddDialog(true)} className="bg-blue-600 hover:bg-blue-700">
-          <UserPlus className="h-4 w-4 mr-2" />
+        <Button className="bg-blue-600 hover:bg-blue-700">
+          <Plus className="h-4 w-4 mr-2" />
           Add User
         </Button>
       </div>
 
-      {/* Role Hierarchy Info */}
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <Users className="h-4 w-4 text-blue-600" />
+              <span>Total Users</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              registered users
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <UserCheck className="h-4 w-4 text-green-600" />
+              <span>Active Users</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{activeUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              currently active
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <UserX className="h-4 w-4 text-yellow-600" />
+              <span>Pending Users</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{pendingUsers}</div>
+            <p className="text-xs text-muted-foreground">
+              awaiting approval
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <Users className="h-4 w-4 text-purple-600" />
+              <span>Admins</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {users.filter(u => u.role === 'admin').length}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              admin users
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search and Filter */}
       <Card>
-        <CardHeader>
-          <CardTitle>Role Hierarchy & Permissions</CardTitle>
-          <CardDescription>Understanding user roles and their capabilities</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <Crown className="h-5 w-5 text-purple-600" />
-                <span className="font-semibold text-purple-600">Business Owner</span>
-              </div>
-              <p className="text-sm text-gray-600">Full access to all features, can manage managers and view all analytics</p>
+        <CardContent className="pt-6">
+          <div className="flex items-center space-x-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Input
+                placeholder="Search by name or email..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
             </div>
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <Shield className="h-5 w-5 text-blue-600" />
-                <span className="font-semibold text-blue-600">Manager</span>
-              </div>
-              <p className="text-sm text-gray-600">Can add/remove employees, manage inventory, and view sales analytics</p>
-            </div>
-            <div className="p-4 border rounded-lg">
-              <div className="flex items-center space-x-2 mb-2">
-                <User className="h-5 w-5 text-green-600" />
-                <span className="font-semibold text-green-600">Employee</span>
-              </div>
-              <p className="text-sm text-gray-600">Can process sales, view basic inventory, and update stock levels</p>
-            </div>
+            <Button variant="outline">
+              <Filter className="h-4 w-4 mr-2" />
+              Filter
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -157,86 +227,85 @@ export const UserManagement = () => {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Team Members ({users.length})</CardTitle>
-          <CardDescription>Manage your team members and their roles</CardDescription>
+          <CardTitle>Users ({filteredUsers.length})</CardTitle>
+          <CardDescription>Manage all user accounts and their details</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">User</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Role</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Tier</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Manager</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Status</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((user) => {
-                  const RoleIcon = getRoleIcon(user.role);
-                  const manager = users.find(u => u.id === user.managerId);
+          <div className="space-y-4">
+            {filteredUsers.map((user) => (
+              <div
+                key={user.id}
+                className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+              >
+                <div className="flex items-center space-x-4">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user.avatar} alt={user.name} />
+                    <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+                  </Avatar>
                   
-                  return (
-                    <tr key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-4">
-                        <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center space-x-2">
-                          <RoleIcon className="h-4 w-4" />
-                          <Badge className={getRoleColor(user.role)}>
-                            {user.role.replace('-', ' ')}
-                          </Badge>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge className={getTierColor(user.tier)}>
-                          {user.tier.replace('-', ' ')}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4 text-gray-600">
-                        {manager ? manager.name : 'N/A'}
-                      </td>
-                      <td className="py-4 px-4">
-                        <Badge className={user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}>
-                          {user.isActive ? 'Active' : 'Inactive'}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center space-x-2">
-                          {canManageUser(user) && (
-                            <>
-                              <Button variant="ghost" size="sm">
-                                <Edit className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" className="text-red-600 hover:text-red-700">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <h3 className="font-medium">{user.name}</h3>
+                      <Badge className={getRoleColor(user.role)}>
+                        {user.role}
+                      </Badge>
+                      <Badge className={getStatusColor(user.status)}>
+                        {user.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Last login: {user.lastLogin} | Joined: {new Date(user.joinDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  {user.status === 'active' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUserAction(user.id, 'deactivate')}
+                    >
+                      Deactivate
+                    </Button>
+                  )}
+                  
+                  {user.status === 'inactive' && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleUserAction(user.id, 'activate')}
+                    >
+                      Activate
+                    </Button>
+                  )}
+
+                  <Button variant="ghost" size="sm">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600 hover:text-red-700"
+                    onClick={() => handleUserAction(user.id, 'delete')}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
           </div>
+
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-8">
+              <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium">No users found</h3>
+              <p className="text-muted-foreground">Try adjusting your search criteria.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
-
-      <AddUserDialog 
-        open={showAddDialog} 
-        onOpenChange={setShowAddDialog}
-        onAddUser={handleAddUser}
-        currentUserRole={getCurrentUserRole()}
-        managers={users.filter(u => u.role === 'manager')}
-      />
     </div>
   );
 };

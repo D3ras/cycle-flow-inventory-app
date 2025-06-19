@@ -3,282 +3,265 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, DollarSign, RefreshCw, CheckCircle, AlertCircle } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
+import { RefreshCw, Play, Pause, Square, Calendar, Clock, TrendingUp } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 
 interface Cycle {
   id: string;
+  name: string;
+  description: string;
+  status: 'active' | 'paused' | 'completed' | 'scheduled';
+  progress: number;
   startDate: string;
-  endDate?: string;
-  status: 'active' | 'completed' | 'pending';
-  totalRevenue: number;
-  unpaidCredits: number;
-  carriedForward: number;
-  itemsSold: number;
+  endDate: string;
+  frequency: string;
+  items: number;
+  lastRun: string;
 }
 
 export const CycleManager = () => {
-  const [showCloseCycleDialog, setShowCloseCycleDialog] = useState(false);
-  
-  // Mock cycle data
   const [cycles, setCycles] = useState<Cycle[]>([
     {
-      id: 'CYC-2024-003',
-      startDate: '2024-06-01',
+      id: '1',
+      name: 'Weekly Inventory Count',
+      description: 'Automated weekly count of all inventory items',
       status: 'active',
-      totalRevenue: 89432,
-      unpaidCredits: 15420.50,
-      carriedForward: 0,
-      itemsSold: 1247
+      progress: 75,
+      startDate: '2024-06-17',
+      endDate: '2024-06-24',
+      frequency: 'Weekly',
+      items: 1234,
+      lastRun: '2024-06-19 10:00'
     },
     {
-      id: 'CYC-2024-002',
-      startDate: '2024-05-01',
-      endDate: '2024-05-31',
-      status: 'completed',
-      totalRevenue: 156780,
-      unpaidCredits: 15420.50,
-      carriedForward: 8960.25,
-      itemsSold: 2134
+      id: '2',
+      name: 'Monthly Restock Analysis',
+      description: 'Monthly analysis for restock recommendations',
+      status: 'scheduled',
+      progress: 0,
+      startDate: '2024-07-01',
+      endDate: '2024-07-31',
+      frequency: 'Monthly',
+      items: 856,
+      lastRun: '2024-05-31 23:59'
     },
     {
-      id: 'CYC-2024-001',
-      startDate: '2024-04-01',
-      endDate: '2024-04-30',
-      status: 'completed',
-      totalRevenue: 142350,
-      unpaidCredits: 8960.25,
-      carriedForward: 5230.75,
-      itemsSold: 1876
+      id: '3',
+      name: 'Daily Low Stock Check',
+      description: 'Daily monitoring of low stock items',
+      status: 'active',
+      progress: 100,
+      startDate: '2024-06-19',
+      endDate: '2024-06-19',
+      frequency: 'Daily',
+      items: 23,
+      lastRun: '2024-06-19 06:00'
+    },
+    {
+      id: '4',
+      name: 'Quarterly Audit Prep',
+      description: 'Quarterly preparation for inventory audit',
+      status: 'paused',
+      progress: 45,
+      startDate: '2024-06-01',
+      endDate: '2024-08-31',
+      frequency: 'Quarterly',
+      items: 2156,
+      lastRun: '2024-06-15 14:30'
     }
   ]);
-
-  const activeCycle = cycles.find(cycle => cycle.status === 'active');
-
-  const handleCloseCycle = () => {
-    if (activeCycle) {
-      const updatedCycles = cycles.map(cycle => 
-        cycle.id === activeCycle.id 
-          ? { 
-              ...cycle, 
-              status: 'completed' as const, 
-              endDate: new Date().toISOString().split('T')[0] 
-            }
-          : cycle
-      );
-      
-      // Create new cycle with carried forward credits
-      const newCycle: Cycle = {
-        id: `CYC-2024-${String(cycles.length + 1).padStart(3, '0')}`,
-        startDate: new Date().toISOString().split('T')[0],
-        status: 'active',
-        totalRevenue: 0,
-        unpaidCredits: 0,
-        carriedForward: activeCycle.unpaidCredits,
-        itemsSold: 0
-      };
-      
-      setCycles([newCycle, ...updatedCycles]);
-      setShowCloseCycleDialog(false);
-      console.log('Cycle closed and new cycle started with carried forward credits:', activeCycle.unpaidCredits);
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active': return 'bg-green-100 text-green-800';
+      case 'paused': return 'bg-yellow-100 text-yellow-800';
       case 'completed': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'scheduled': return 'bg-purple-100 text-purple-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'active': return <RefreshCw className="h-4 w-4" />;
-      case 'completed': return <CheckCircle className="h-4 w-4" />;
-      case 'pending': return <AlertCircle className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
-    }
+  const handleCycleAction = (cycleId: string, action: 'start' | 'pause' | 'stop') => {
+    setCycles(cycles.map(cycle => {
+      if (cycle.id === cycleId) {
+        switch (action) {
+          case 'start':
+            return { ...cycle, status: 'active' as const };
+          case 'pause':
+            return { ...cycle, status: 'paused' as const };
+          case 'stop':
+            return { ...cycle, status: 'completed' as const, progress: 100 };
+          default:
+            return cycle;
+        }
+      }
+      return cycle;
+    }));
+    
+    toast.success(`Cycle ${action}ed successfully`);
   };
+
+  const activeCycles = cycles.filter(c => c.status === 'active').length;
+  const totalItems = cycles.reduce((sum, cycle) => sum + cycle.items, 0);
+  const avgProgress = cycles.reduce((sum, cycle) => sum + cycle.progress, 0) / cycles.length;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Cycle Manager</h1>
-          <p className="text-gray-600 mt-2">Manage inventory cycles and credit tracking</p>
-        </div>
-        {activeCycle && (
-          <Dialog open={showCloseCycleDialog} onOpenChange={setShowCloseCycleDialog}>
-            <DialogTrigger asChild>
-              <Button className="bg-red-600 hover:bg-red-700">
-                Close Current Cycle
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Close Current Cycle</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to close the current cycle? This will:
-                  <ul className="list-disc list-inside mt-2 space-y-1">
-                    <li>Mark the current cycle as completed</li>
-                    <li>Start a new cycle automatically</li>
-                    <li>Carry forward unpaid credits: ${activeCycle.unpaidCredits.toLocaleString()}</li>
-                  </ul>
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex justify-end space-x-2 pt-4">
-                <Button variant="outline" onClick={() => setShowCloseCycleDialog(false)}>
-                  Cancel
-                </Button>
-                <Button className="bg-red-600 hover:bg-red-700" onClick={handleCloseCycle}>
-                  Close Cycle
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Cycle Manager</h1>
+        <p className="text-muted-foreground mt-2">
+          Manage and monitor automated inventory cycles and processes
+        </p>
       </div>
 
-      {/* Active Cycle Overview */}
-      {activeCycle && (
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Active Cycle: {activeCycle.id}</span>
-              <Badge variant="secondary" className="bg-white/20 text-white">
-                {activeCycle.status}
-              </Badge>
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <RefreshCw className="h-4 w-4 text-blue-600" />
+              <span>Active Cycles</span>
             </CardTitle>
-            <CardDescription className="text-blue-100">
-              Started on {new Date(activeCycle.startDate).toLocaleDateString()} • 
-              Active for {Math.ceil((new Date().getTime() - new Date(activeCycle.startDate).getTime()) / (1000 * 60 * 60 * 24))} days
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-blue-100 text-sm">Revenue</p>
-                <p className="text-2xl font-bold">${activeCycle.totalRevenue.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-blue-100 text-sm">Items Sold</p>
-                <p className="text-2xl font-bold">{activeCycle.itemsSold.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-blue-100 text-sm">Unpaid Credits</p>
-                <p className="text-2xl font-bold">${activeCycle.unpaidCredits.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-blue-100 text-sm">Carried Forward</p>
-                <p className="text-2xl font-bold">${activeCycle.carriedForward.toLocaleString()}</p>
-              </div>
-            </div>
+            <div className="text-2xl font-bold">{activeCycles}</div>
+            <p className="text-xs text-muted-foreground">
+              of {cycles.length} total cycles
+            </p>
           </CardContent>
         </Card>
-      )}
 
-      {/* Cycle History */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <TrendingUp className="h-4 w-4 text-green-600" />
+              <span>Total Items</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{totalItems.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">
+              across all cycles
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <Clock className="h-4 w-4 text-purple-600" />
+              <span>Avg Progress</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{avgProgress.toFixed(0)}%</div>
+            <p className="text-xs text-muted-foreground">
+              completion rate
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <Calendar className="h-4 w-4 text-orange-600" />
+              <span>Next Due</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">2</div>
+            <p className="text-xs text-muted-foreground">
+              cycles due today
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Cycles List */}
       <Card>
         <CardHeader>
-          <CardTitle>Cycle History</CardTitle>
-          <CardDescription>Complete history of all inventory cycles</CardDescription>
+          <CardTitle>All Cycles</CardTitle>
+          <CardDescription>Manage your inventory cycles and their progress</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {cycles.map((cycle) => (
-              <div key={cycle.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    <div className="flex items-center space-x-2">
-                      {getStatusIcon(cycle.status)}
-                      <h3 className="font-semibold text-gray-900">{cycle.id}</h3>
+              <div key={cycle.id} className="border rounded-lg p-6">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3 mb-2">
+                      <h3 className="text-lg font-semibold">{cycle.name}</h3>
+                      <Badge className={getStatusColor(cycle.status)}>
+                        {cycle.status}
+                      </Badge>
                     </div>
-                    <Badge className={getStatusColor(cycle.status)}>
-                      {cycle.status}
-                    </Badge>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-gray-900">${cycle.totalRevenue.toLocaleString()}</p>
-                    <p className="text-sm text-gray-500">Total Revenue</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-gray-600">Start Date</p>
-                      <p className="font-medium">{new Date(cycle.startDate).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  
-                  {cycle.endDate && (
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-4 w-4 text-gray-400" />
+                    <p className="text-muted-foreground mb-3">{cycle.description}</p>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                       <div>
-                        <p className="text-gray-600">End Date</p>
-                        <p className="font-medium">{new Date(cycle.endDate).toLocaleDateString()}</p>
+                        <span className="text-muted-foreground">Frequency:</span>
+                        <p className="font-medium">{cycle.frequency}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Items:</span>
+                        <p className="font-medium">{cycle.items.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Period:</span>
+                        <p className="font-medium">
+                          {new Date(cycle.startDate).toLocaleDateString()} - {new Date(cycle.endDate).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground">Last Run:</span>
+                        <p className="font-medium">{cycle.lastRun}</p>
                       </div>
                     </div>
-                  )}
-                  
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-gray-600">Unpaid Credits</p>
-                      <p className="font-medium">${cycle.unpaidCredits.toLocaleString()}</p>
-                    </div>
                   </div>
-                  
-                  <div className="flex items-center space-x-2">
-                    <RefreshCw className="h-4 w-4 text-gray-400" />
-                    <div>
-                      <p className="text-gray-600">Carried Forward</p>
-                      <p className="font-medium">${cycle.carriedForward.toLocaleString()}</p>
-                    </div>
+
+                  <div className="flex items-center space-x-2 ml-4">
+                    {cycle.status === 'active' && (
+                      <>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleCycleAction(cycle.id, 'pause')}
+                        >
+                          <Pause className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleCycleAction(cycle.id, 'stop')}
+                        >
+                          <Square className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                    
+                    {(cycle.status === 'paused' || cycle.status === 'scheduled') && (
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleCycleAction(cycle.id, 'start')}
+                      >
+                        <Play className="h-4 w-4" />
+                      </Button>
+                    )}
                   </div>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Progress</span>
+                    <span>{cycle.progress}%</span>
+                  </div>
+                  <Progress value={cycle.progress} className="h-2" />
                 </div>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Credit Flow Summary */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Credit Flow Summary</CardTitle>
-          <CardDescription>Track how credits flow between cycles</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <h4 className="font-medium text-yellow-800 mb-2">Total Outstanding Credits</h4>
-                <p className="text-2xl font-bold text-yellow-900">
-                  ${cycles.reduce((sum, cycle) => sum + cycle.unpaidCredits, 0).toLocaleString()}
-                </p>
-                <p className="text-sm text-yellow-700 mt-1">Across all cycles</p>
-              </div>
-              
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-medium text-green-800 mb-2">Total Revenue</h4>
-                <p className="text-2xl font-bold text-green-900">
-                  ${cycles.reduce((sum, cycle) => sum + cycle.totalRevenue, 0).toLocaleString()}
-                </p>
-                <p className="text-sm text-green-700 mt-1">All time</p>
-              </div>
-              
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-blue-800 mb-2">Items Sold</h4>
-                <p className="text-2xl font-bold text-blue-900">
-                  {cycles.reduce((sum, cycle) => sum + cycle.itemsSold, 0).toLocaleString()}
-                </p>
-                <p className="text-sm text-blue-700 mt-1">All time</p>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>

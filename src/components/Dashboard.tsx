@@ -1,97 +1,71 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Package, TrendingUp, DollarSign, RefreshCw } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { BarChart3, Package, Users, TrendingUp, AlertTriangle, DollarSign } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 export const Dashboard = () => {
-  // Mock data for demonstration
-  const currentCycle = {
-    id: 'CYC-2024-003',
-    status: 'active',
-    startDate: '2024-06-01',
-    daysActive: 9,
-    carriedForwardCredits: 15420.50
-  };
+  const { user } = useAuth();
 
   const stats = [
     {
       title: 'Total Items',
-      value: '2,847',
+      value: '1,234',
       change: '+12%',
-      trend: 'up',
       icon: Package,
+      color: 'text-blue-600'
     },
     {
-      title: 'Current Cycle Value',
-      value: '$89,432',
-      change: '+8.2%',
-      trend: 'up',
+      title: 'Low Stock Alerts',
+      value: '23',
+      change: '-5%',
+      icon: AlertTriangle,
+      color: 'text-red-600'
+    },
+    {
+      title: 'Total Users',
+      value: '45',
+      change: '+8%',
+      icon: Users,
+      color: 'text-green-600'
+    },
+    {
+      title: 'Monthly Revenue',
+      value: '$12,345',
+      change: '+15%',
       icon: DollarSign,
-    },
-    {
-      title: 'Carried Credits',
-      value: `$${currentCycle.carriedForwardCredits.toLocaleString()}`,
-      change: 'From previous cycle',
-      trend: 'neutral',
-      icon: TrendingUp,
-    },
-    {
-      title: 'Cycle Status',
-      value: currentCycle.status.toUpperCase(),
-      change: `Day ${currentCycle.daysActive}`,
-      trend: 'neutral',
-      icon: RefreshCw,
-    },
+      color: 'text-purple-600'
+    }
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back! Here's your inventory overview.</p>
+        <h1 className="text-3xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground mt-2">
+          Welcome back, {user?.user_metadata?.full_name || user?.email || 'User'}
+        </p>
       </div>
 
-      {/* Current Cycle Info */}
-      <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Current Cycle: {currentCycle.id}</span>
-            <Badge variant="secondary" className="bg-white/20 text-white">
-              {currentCycle.status}
-            </Badge>
-          </CardTitle>
-          <CardDescription className="text-blue-100">
-            Started on {new Date(currentCycle.startDate).toLocaleDateString()} • Active for {currentCycle.daysActive} days
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            ${currentCycle.carriedForwardCredits.toLocaleString()} carried forward
-          </div>
-          <p className="text-blue-100 mt-1">Credits from previous cycle</p>
-        </CardContent>
-      </Card>
-
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title} className="hover:shadow-md transition-shadow">
+            <Card key={stat.title}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-gray-600">
+                <CardTitle className="text-sm font-medium">
                   {stat.title}
                 </CardTitle>
-                <Icon className="h-4 w-4 text-gray-400" />
+                <Icon className={`h-4 w-4 ${stat.color}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
-                <p className={`text-xs ${
-                  stat.trend === 'up' ? 'text-green-600' : 
-                  stat.trend === 'down' ? 'text-red-600' : 'text-gray-500'
-                }`}>
-                  {stat.change}
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">
+                  <span className={stat.change.startsWith('+') ? 'text-green-600' : 'text-red-600'}>
+                    {stat.change}
+                  </span>
+                  {' '}from last month
                 </p>
               </CardContent>
             </Card>
@@ -99,38 +73,86 @@ export const Dashboard = () => {
         })}
       </div>
 
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Activity</CardTitle>
-          <CardDescription>Latest inventory transactions and updates</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[
-              { action: 'Added 50 units', item: 'Widget Pro X1', time: '2 hours ago', type: 'addition' },
-              { action: 'Sold 25 units', item: 'Basic Widget', time: '4 hours ago', type: 'sale' },
-              { action: 'Updated price', item: 'Premium Widget', time: '6 hours ago', type: 'update' },
-              { action: 'Low stock alert', item: 'Mini Widget', time: '8 hours ago', type: 'alert' },
-            ].map((activity, index) => (
-              <div key={index} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${
-                    activity.type === 'addition' ? 'bg-green-500' :
-                    activity.type === 'sale' ? 'bg-blue-500' :
-                    activity.type === 'update' ? 'bg-yellow-500' : 'bg-red-500'
-                  }`}></div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">{activity.action}</p>
-                    <p className="text-xs text-gray-500">{activity.item}</p>
-                  </div>
-                </div>
-                <span className="text-xs text-gray-400">{activity.time}</span>
+      {/* Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <BarChart3 className="h-5 w-5" />
+              <span>Recent Activity</span>
+            </CardTitle>
+            <CardDescription>Latest inventory updates</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Widget Pro X1 restocked</span>
+                <span className="text-xs text-muted-foreground">2h ago</span>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Low stock alert: Basic Widget</span>
+                <span className="text-xs text-muted-foreground">4h ago</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">New user added</span>
+                <span className="text-xs text-muted-foreground">1d ago</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <TrendingUp className="h-5 w-5" />
+              <span>Performance</span>
+            </CardTitle>
+            <CardDescription>This month's overview</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between">
+                <span className="text-sm">Sales Growth</span>
+                <span className="text-sm font-medium text-green-600">+15.2%</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">Inventory Turnover</span>
+                <span className="text-sm font-medium text-blue-600">2.4x</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm">Customer Satisfaction</span>
+                <span className="text-sm font-medium text-purple-600">98.5%</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <AlertTriangle className="h-5 w-5" />
+              <span>Alerts</span>
+            </CardTitle>
+            <CardDescription>Items requiring attention</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Low Stock Items</span>
+                <span className="text-sm font-medium text-red-600">23</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Expired Items</span>
+                <span className="text-sm font-medium text-orange-600">5</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Pending Orders</span>
+                <span className="text-sm font-medium text-blue-600">12</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

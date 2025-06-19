@@ -1,218 +1,203 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertTriangle, Package, TrendingDown, RefreshCw } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { AlertTriangle, Package, TrendingDown, Clock, CheckCircle } from 'lucide-react';
+import { toast } from '@/components/ui/sonner';
 
 interface StockAlert {
   id: string;
   itemName: string;
-  sku: string;
   currentStock: number;
   minimumStock: number;
-  alertLevel: 'critical' | 'warning' | 'low';
-  lastUpdated: string;
   category: string;
+  severity: 'critical' | 'warning' | 'info';
+  lastUpdated: string;
+  location: string;
 }
 
 export const StockAlerts = () => {
-  const [alerts] = useState<StockAlert[]>([
+  const [alerts, setAlerts] = useState<StockAlert[]>([
     {
       id: '1',
-      itemName: 'Premium Widget',
-      sku: 'PW-003',
-      currentStock: 0,
-      minimumStock: 10,
-      alertLevel: 'critical',
-      lastUpdated: '2024-06-10',
-      category: 'Premium'
+      itemName: 'Widget Pro X1',
+      currentStock: 5,
+      minimumStock: 20,
+      category: 'Electronics',
+      severity: 'critical',
+      lastUpdated: '2024-06-19 10:30',
+      location: 'Warehouse A'
     },
     {
       id: '2',
-      itemName: 'Mini Widget',
-      sku: 'MW-004',
-      currentStock: 8,
-      minimumStock: 20,
-      alertLevel: 'warning',
-      lastUpdated: '2024-06-10',
-      category: 'Compact'
+      itemName: 'Basic Widget',
+      currentStock: 15,
+      minimumStock: 25,
+      category: 'Basic',
+      severity: 'warning',
+      lastUpdated: '2024-06-19 09:15',
+      location: 'Warehouse B'
     },
     {
       id: '3',
-      itemName: 'Basic Widget',
-      sku: 'BW-002',
-      currentStock: 25,
-      minimumStock: 50,
-      alertLevel: 'low',
-      lastUpdated: '2024-06-09',
-      category: 'Basic'
+      itemName: 'Mini Widget',
+      currentStock: 8,
+      minimumStock: 10,
+      category: 'Compact',
+      severity: 'info',
+      lastUpdated: '2024-06-19 08:45',
+      location: 'Store Front'
     }
   ]);
 
-  const getAlertColor = (level: string) => {
-    switch (level) {
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
       case 'critical': return 'bg-red-100 text-red-800 border-red-200';
       case 'warning': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'info': return 'bg-blue-100 text-blue-800 border-blue-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
-  const getAlertIcon = (level: string) => {
-    switch (level) {
-      case 'critical': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-      case 'warning': return <TrendingDown className="h-4 w-4 text-yellow-600" />;
-      case 'low': return <Package className="h-4 w-4 text-orange-600" />;
-      default: return <Package className="h-4 w-4 text-gray-600" />;
+  const getSeverityIcon = (severity: string) => {
+    switch (severity) {
+      case 'critical': return AlertTriangle;
+      case 'warning': return TrendingDown;
+      case 'info': return Clock;
+      default: return Package;
     }
   };
 
-  const criticalAlerts = alerts.filter(alert => alert.alertLevel === 'critical');
-  const warningAlerts = alerts.filter(alert => alert.alertLevel === 'warning');
-  const lowAlerts = alerts.filter(alert => alert.alertLevel === 'low');
+  const handleResolveAlert = (alertId: string) => {
+    setAlerts(alerts.filter(alert => alert.id !== alertId));
+    toast.success('Alert resolved successfully');
+  };
+
+  const handleReorderItem = (itemName: string) => {
+    toast.success(`Reorder initiated for ${itemName}`);
+  };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Stock Alerts</h1>
-          <p className="text-gray-600 mt-2">Monitor low stock levels and inventory alerts</p>
-        </div>
-        <Button variant="outline" className="flex items-center space-x-2">
-          <RefreshCw className="h-4 w-4" />
-          <span>Refresh Alerts</span>
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-foreground">Stock Alerts</h1>
+        <p className="text-muted-foreground mt-2">
+          Monitor and manage inventory alerts across all locations
+        </p>
       </div>
 
       {/* Alert Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-red-200 bg-red-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-red-800 flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5" />
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <AlertTriangle className="h-4 w-4 text-red-600" />
               <span>Critical Alerts</span>
             </CardTitle>
-            <CardDescription className="text-red-600">Items that are out of stock</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-red-800">{criticalAlerts.length}</div>
-            <p className="text-sm text-red-600 mt-1">Requires immediate attention</p>
+            <div className="text-2xl font-bold text-red-600">
+              {alerts.filter(a => a.severity === 'critical').length}
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-yellow-200 bg-yellow-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-yellow-800 flex items-center space-x-2">
-              <TrendingDown className="h-5 w-5" />
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <TrendingDown className="h-4 w-4 text-yellow-600" />
               <span>Warning Alerts</span>
             </CardTitle>
-            <CardDescription className="text-yellow-600">Items below reorder point</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-yellow-800">{warningAlerts.length}</div>
-            <p className="text-sm text-yellow-600 mt-1">Need restocking soon</p>
+            <div className="text-2xl font-bold text-yellow-600">
+              {alerts.filter(a => a.severity === 'warning').length}
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="border-orange-200 bg-orange-50">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-orange-800 flex items-center space-x-2">
-              <Package className="h-5 w-5" />
-              <span>Low Stock</span>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium flex items-center space-x-2">
+              <Clock className="h-4 w-4 text-blue-600" />
+              <span>Info Alerts</span>
             </CardTitle>
-            <CardDescription className="text-orange-600">Items with low inventory</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-orange-800">{lowAlerts.length}</div>
-            <p className="text-sm text-orange-600 mt-1">Monitor closely</p>
+            <div className="text-2xl font-bold text-blue-600">
+              {alerts.filter(a => a.severity === 'info').length}
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Critical Alerts */}
-      {criticalAlerts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-red-800 flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5" />
-              <span>Critical Stock Alerts</span>
-            </CardTitle>
-            <CardDescription>Items that are completely out of stock</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {criticalAlerts.map((alert) => (
-                <Alert key={alert.id} className="border-red-200 bg-red-50">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertTitle className="text-red-800">{alert.itemName} is out of stock</AlertTitle>
-                  <AlertDescription className="text-red-700">
-                    SKU: {alert.sku} • Current: {alert.currentStock} • Minimum: {alert.minimumStock}
-                  </AlertDescription>
-                </Alert>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* All Alerts Table */}
+      {/* Alerts List */}
       <Card>
         <CardHeader>
-          <CardTitle>Stock Alert Details</CardTitle>
-          <CardDescription>Complete list of all stock alerts</CardDescription>
+          <CardTitle>Active Alerts</CardTitle>
+          <CardDescription>Items requiring immediate attention</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Item</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Current Stock</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Minimum Stock</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Alert Level</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Last Updated</th>
-                  <th className="text-left py-3 px-4 font-medium text-gray-600">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {alerts.map((alert) => (
-                  <tr key={alert.id} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="py-4 px-4">
-                      <div>
-                        <p className="font-medium text-gray-900">{alert.itemName}</p>
-                        <p className="text-sm text-gray-500">{alert.sku} • {alert.category}</p>
-                      </div>
-                    </td>
-                    <td className="py-4 px-4">
-                      <span className={`font-medium ${
-                        alert.currentStock === 0 ? 'text-red-600' :
-                        alert.currentStock < alert.minimumStock ? 'text-yellow-600' : 'text-green-600'
-                      }`}>
-                        {alert.currentStock}
-                      </span>
-                    </td>
-                    <td className="py-4 px-4 text-gray-600">{alert.minimumStock}</td>
-                    <td className="py-4 px-4">
+          <div className="space-y-4">
+            {alerts.map((alert) => {
+              const SeverityIcon = getSeverityIcon(alert.severity);
+              return (
+                <div
+                  key={alert.id}
+                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                >
+                  <div className="flex items-center space-x-4">
+                    <SeverityIcon className={`h-5 w-5 ${
+                      alert.severity === 'critical' ? 'text-red-600' :
+                      alert.severity === 'warning' ? 'text-yellow-600' : 'text-blue-600'
+                    }`} />
+                    
+                    <div className="flex-1">
                       <div className="flex items-center space-x-2">
-                        {getAlertIcon(alert.alertLevel)}
-                        <Badge className={getAlertColor(alert.alertLevel)}>
-                          {alert.alertLevel}
+                        <h3 className="font-medium">{alert.itemName}</h3>
+                        <Badge className={getSeverityColor(alert.severity)}>
+                          {alert.severity}
                         </Badge>
                       </div>
-                    </td>
-                    <td className="py-4 px-4 text-gray-600">{alert.lastUpdated}</td>
-                    <td className="py-4 px-4">
-                      <Button size="sm" variant="outline">
-                        Restock
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                      <div className="text-sm text-muted-foreground mt-1">
+                        Current: {alert.currentStock} | Minimum: {alert.minimumStock} | 
+                        Category: {alert.category} | Location: {alert.location}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Last updated: {alert.lastUpdated}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleReorderItem(alert.itemName)}
+                    >
+                      Reorder
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleResolveAlert(alert.id)}
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
+
+          {alerts.length === 0 && (
+            <div className="text-center py-8">
+              <CheckCircle className="h-12 w-12 text-green-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium">All Clear!</h3>
+              <p className="text-muted-foreground">No stock alerts at this time.</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
