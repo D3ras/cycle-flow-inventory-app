@@ -1,73 +1,79 @@
-# Welcome to your Lovable project
+# Cycle Inventory Management System (Frontend)
 
-## Project info
+## Overview
 
-**URL**: https://lovable.dev/projects/4d798b81-f70d-406c-b6ef-ae05a5b187bb
+A modern, type-safe frontend for managing bicycle inventory. Designed to work with any backend (Supabase-compatible by default).
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- **Inventory Management**: Track cycles with detailed specifications
+- **Responsive UI**: Works on all device sizes
+- **Type Safety**: Built with TypeScript for robust development
+- **Modern Styling**: Utilizes Tailwind CSS and shadcn-ui components
 
-**Use Lovable**
+## Tech Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4d798b81-f70d-406c-b6ef-ae05a5b187bb) and start prompting.
+- ⚡ [Vite](https://vitejs.dev/) - Next-gen frontend tooling
+- 🏗️ [React 18](https://reactjs.org/) - Component-based UI
+- 📜 [TypeScript](https://www.typescriptlang.org/) - Type-safe JavaScript
+- 🎨 [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework
+- 🧩 [shadcn-ui](https://ui.shadcn.com/) - Beautifully designed components
 
-Changes made via Lovable will be committed automatically to this repo.
+## Prerequisites
 
-**Use your preferred IDE**
+- Node.js ≥16.x
+- npm/yarn/pnpm
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Clone the repository
+git clone  https://github.com/D3ras/cycle-flow-inventory-app.git
 
-Follow these steps:
+# Navigate to project directory
+cd cycle-flow-inventory-app
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Configuration
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
 
-**Use GitHub Codespaces**
+Create a `.env` file based on `.env.example`:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```env
+VITE_SUPABASE_URL=your_supabase_url
+VITE_SUPABASE_KEY=your_supabase_anon_key
+```
 
-## What technologies are used for this project?
+## Project Structure
 
-This project is built with:
+```
+/src
+├── /assets          # Static assets
+├── /components      # Reusable UI components
+├── /hooks           # Custom React hooks
+├── /lib             # Utility functions
+├── /pages           # Application pages
+├── /types           # TypeScript type definitions
+├── App.tsx          # Main application component
+└── main.tsx         # Application entry point
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Available Scripts
 
-## How can I deploy this project?
+- `dev`: Start development server
+- `build`: Create production build
+- `preview`: Preview production build locally
+- `lint`: Run ESLint
+- `type-check`: Verify TypeScript types
 
-Simply open [Lovable](https://lovable.dev/projects/4d798b81-f70d-406c-b6ef-ae05a5b187bb) and click on Share -> Publish.
+## Contributing
 
-## Can I connect a custom domain to my Lovable project?
+Pull requests are welcome. For major changes, please open an issue first to discuss proposed changes.
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## License
